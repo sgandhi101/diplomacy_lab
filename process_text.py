@@ -20,11 +20,10 @@ def clean_up(text):
     return lemmas
 
 
-
-text_1 = ' "In this code, you set up some example text to tokenize, load spaCy’s English model, and then tokenize the text by passing it into the nlp constructor. This model includes a default processing pipeline that you can customize, as you’ll see later in the project section."'
+text_1 = 'The head of the European Commission said the bloc would switch policy, under certain conditions, after more than a year of mostly banning nonessential travel.'
 hello = (clean_up(text_1))
 
-text_2 = 'In this code, you set up some example text to tokenize, load spaCy’s English model, and'
+text_2 = 'American tourists who have been fully vaccinated against Covid-19 will be able to visit the European Union over the summer, the head of the bloc’s executive body said'
 hello_2 = (clean_up(text_2))
 print(hello)
 
