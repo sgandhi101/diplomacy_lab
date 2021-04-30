@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeClassifier
 
-state_dept = pd.read_json('tweet_collection/state_dept.json', lines=True)  # Import dataset
+state_dept = pd.read_json('tweet_collection/state_dept.json', lines=True)  # Import State Dept Dataset
 state_dept = state_dept.assign(classification=0)
 state_dept = state_dept.drop(
     ['date', 'video', 'id', 'conversation_id', 'created_at', 'timezone', 'user_id', 'username', 'name', 'place',
@@ -19,7 +19,7 @@ state_dept = state_dept.drop(
      'translate', 'trans_src', 'trans_dest', 'photos', 'time'],
     axis=1)
 
-cdc = pd.read_json('tweet_collection/cdc.json', lines=True)  # Import dataset
+cdc = pd.read_json('tweet_collection/cdc.json', lines=True)  # Import CDC Dataset
 cdc = cdc.assign(classification=1)
 cdc = cdc.drop(
     ['date', 'video', 'id', 'conversation_id', 'created_at', 'timezone', 'user_id', 'username', 'name', 'place',
@@ -29,7 +29,7 @@ cdc = cdc.drop(
      'translate', 'trans_src', 'trans_dest', 'photos', 'time'],
     axis=1)
 
-energy = pd.read_json('tweet_collection/energy.json', lines=True)  # Import dataset
+energy = pd.read_json('tweet_collection/energy.json', lines=True)  # Import Energy Dept Dataset
 energy = energy.assign(classification=2)
 energy = energy.drop(
     ['date', 'video', 'id', 'conversation_id', 'created_at', 'timezone', 'user_id', 'username', 'name', 'place',
@@ -39,7 +39,7 @@ energy = energy.drop(
      'translate', 'trans_src', 'trans_dest', 'photos', 'time'],
     axis=1)
 
-fbi = pd.read_json('tweet_collection/fbi.json', lines=True)  # Import dataset
+fbi = pd.read_json('tweet_collection/fbi.json', lines=True)  # Import FBI Dataset
 fbi = fbi.assign(classification=3)
 fbi = fbi.drop(
     ['date', 'video', 'id', 'conversation_id', 'created_at', 'timezone', 'user_id', 'username', 'name', 'place',
@@ -49,7 +49,7 @@ fbi = fbi.drop(
      'translate', 'trans_src', 'trans_dest', 'photos', 'time'],
     axis=1)
 
-education = pd.read_json('tweet_collection/education.json', lines=True)  # Import dataset
+education = pd.read_json('tweet_collection/education.json', lines=True)  # Import Education Dept Dataset
 education = education.assign(classification=4)
 education = education.drop(
     ['date', 'video', 'id', 'conversation_id', 'created_at', 'timezone', 'user_id', 'username', 'name', 'place',
@@ -73,21 +73,21 @@ aggregate = aggregate.append(education)
 X = aggregate['tweet']
 y = aggregate['classification']
 
-train_X, test_X, train_y, test_y = train_test_split(X, y, test_size=0.20)
-vector_data = CountVectorizer()  # or term frequency
+x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
+vector_data = CountVectorizer()
 
-X_train_tf = vector_data.fit_transform(train_X)
-X_test_tf = vector_data.transform(test_X)
+x_train_transformed = vector_data.fit_transform(x_train)
+x_test_transformed = vector_data.transform(x_test)
 
 error = []
-lowestError = 1  # Start off with the worst possible error and this will get compared every iteration to find the lowest
+lowestError = 1
 iterations = 10
 for i in range(1, iterations):
     knn = KNeighborsClassifier(n_neighbors=i)
-    knn.fit(X_train_tf, train_y)
-    pred_i = knn.predict(X_test_tf)
-    error.append(np.mean(pred_i != test_y))
-    x = np.mean(pred_i != test_y)
+    knn.fit(x_train_transformed, y_train)
+    pred_i = knn.predict(x_test_transformed)
+    error.append(np.mean(pred_i != y_test))
+    x = np.mean(pred_i != y_test)
     if x < lowestError:
         lowestError = x
 
@@ -108,29 +108,31 @@ plt.show()
 
 print("*" * 100)
 decision_tree = DecisionTreeClassifier()  # Initialize the decision tree
-decision_tree.fit(X_train_tf, train_y)  # Fit the training data
-y_pred = decision_tree.predict(X_test_tf)  # Use this to predict
+decision_tree.fit(x_train_transformed, y_train)  # Fit the training data
+y_pred = decision_tree.predict(x_test_transformed)  # Use this to predict
 
-score = metrics.accuracy_score(test_y, y_pred)
+score = metrics.accuracy_score(y_test, y_pred)
 print("accuracy:   %0.3f" % score)
 
-print(metrics.classification_report(test_y, y_pred, target_names=['State Dept', 'CDC', 'Energy', 'FBI', 'Education']))
+print(metrics.classification_report(y_test, y_pred, target_names=['State Dept', 'CDC', 'Energy', 'FBI', 'Education']))
 
 print("confusion matrix:")
-print(metrics.confusion_matrix(test_y, y_pred))
+print(metrics.confusion_matrix(y_test, y_pred))
 
 print("*" * 50)
 naive_bayes_classifier = MultinomialNB()
-naive_bayes_classifier.fit(X_train_tf, train_y)
+naive_bayes_classifier.fit(x_train_transformed, y_train)
 
-y_pred = naive_bayes_classifier.predict(X_test_tf)
+y_pred = naive_bayes_classifier.predict(x_test_transformed)
 
-score = metrics.accuracy_score(test_y, y_pred)
-naive_classification_report = metrics.classification_report(test_y, y_pred)
-skplt.metrics.plot_confusion_matrix(test_y, y_pred, normalize=True)
+score = metrics.accuracy_score(y_test, y_pred)
+naive_classification_report = metrics.classification_report(y_test, y_pred,
+                                                            target_names=['State Dept', 'CDC', 'Energy', 'FBI',
+                                                                          'Education'])
+skplt.metrics.plot_confusion_matrix(y_test, y_pred, normalize=True)
 plt.show()
 
 print("Confusion Matrix:")
-print(metrics.confusion_matrix(test_y, y_pred))
+print(metrics.confusion_matrix(y_test, y_pred))
 print(naive_classification_report)
 print("Naive Bayes Accuracy:", round(score, 2))
